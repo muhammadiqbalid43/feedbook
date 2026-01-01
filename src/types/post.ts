@@ -1,12 +1,36 @@
-import { User } from "./user";
-
 export interface Post {
   id: string;
-  author: User;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
   content: string;
-  imageUrl?: string;
-  likesCount: number;
-  commentsCount: number;
-  createdAt: Date;
-  updatedAt?: Date;
+  image?: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  createdAt: string;
+  isLiked?: boolean;
+}
+
+export interface CreatePostInput {
+  content: string;
+  image?: string;
+  authorId: string;
+}
+
+export interface UpdatePostInput {
+  content?: string;
+  image?: string;
+}
+
+export interface PostsResponse {
+  posts: Post[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
 }
