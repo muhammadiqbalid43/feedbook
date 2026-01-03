@@ -1,6 +1,7 @@
 import { createPostSchema } from "@/lib/validations/post-schema";
 import { dataStore } from "@/server/data/store";
 import { NextRequest, NextResponse } from "next/server";
+import z from "zod";
 
 // GET /api/posts - List posts with pagination
 export async function GET(request: NextRequest) {
@@ -9,10 +10,12 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
+    // Validation
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
         {
-          error: "Invalid pagination parameters",
+          error: "Invalid parameters",
+          message: "Page must be >= 1, limit must be between 1 and 100",
           code: "VALIDATION_ERROR",
         },
         { status: 400 }
@@ -21,12 +24,21 @@ export async function GET(request: NextRequest) {
 
     const result = dataStore.getPosts(page, limit);
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json({
+      posts: result.posts,
+      pagination: {
+        page,
+        limit,
+        total: result.pagination.total,
+        hasMore: result.pagination.hasMore,
+      },
+    });
   } catch (error) {
     console.error("GET /api/posts error:", error);
     return NextResponse.json(
       {
-        error: "Failed to fetch posts",
+        error: "Server error",
+        message: "Failed to fetch posts",
         code: "SERVER_ERROR",
       },
       { status: 500 }
@@ -39,27 +51,28 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const validationResult = createPostSchema.safeParse(body);
+    const validatedData = createPostSchema.parse(body);
 
-    if (!validationResult.success) {
+    const newPost = dataStore.createPost(validatedData);
+
+    return NextResponse.json({ post: newPost }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
-          error: "Validation failed",
-          message: validationResult.error.issues[0].message,
+          error: "Validation error",
+          message: error.issues[0]?.message || "Invalid input",
           code: "VALIDATION_ERROR",
         },
         { status: 400 }
       );
     }
 
-    const newPost = dataStore.createPost(validationResult.data);
-
-    return NextResponse.json({ post: newPost }, { status: 201 });
-  } catch (error) {
     console.error("POST /api/posts error:", error);
     return NextResponse.json(
       {
-        error: "Failed to create post",
+        error: "Server error",
+        message: "Failed to create post",
         code: "SERVER_ERROR",
       },
       { status: 500 }
