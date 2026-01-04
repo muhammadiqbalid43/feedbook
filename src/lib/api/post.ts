@@ -1,24 +1,39 @@
-import { PostPage } from "@/components/feed/feed-list";
-import { QueryFunctionContext } from "@tanstack/react-query";
+import { PostsResponse } from "@/types/post";
 
-export type PageParam = number;
+export async function getInitialPosts(): Promise<PostsResponse> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/posts?page=1&limit=20`, {
+      cache: "no-store",
+    });
 
-export async function getFeedPosts(page = 1) {
-  const res = await fetch(`/api/posts?page=${page}&limit=15`);
-  if (!res.ok) throw new Error("Gagal fetch");
-  return res.json();
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch initial posts:", error);
+    return {
+      posts: [],
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        hasMore: false,
+      },
+    };
+  }
 }
 
-export async function fetchPosts(
-  context: QueryFunctionContext<readonly unknown[], PageParam>
-): Promise<PostPage> {
-  const pageParam = context.pageParam ?? 1; // safe default
+export async function fetchPosts(page: number = 1): Promise<PostsResponse> {
+  const response = await fetch(`/api/posts?page=${page}&limit=20`);
 
-  const res = await fetch(`/api/posts?page=${pageParam}&limit=10`);
-
-  if (!res.ok) {
-    throw new Error(`Gagal memuat halaman ${pageParam}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch posts");
   }
 
-  return res.json();
+  const data = await response.json();
+  return data;
 }
