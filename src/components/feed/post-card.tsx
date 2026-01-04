@@ -1,7 +1,8 @@
 "use client";
 
+import { formatNumber, formatRelativeTime } from "@/lib/utils/formatters";
 import { Post } from "@/types/post";
-import { formatDistanceToNow } from "date-fns";
+import { MessageCircle, MoreHorizontal, Share2, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 
 interface PostCardProps {
@@ -10,102 +11,115 @@ interface PostCardProps {
 
 const PostCard = ({ post }: PostCardProps) => {
   return (
-    <article className="border border-border rounded-xl bg-card">
-      {/* Header: Avatar + Nama + Timestamp */}
-      <div className="flex items-start gap-3 p-4 pb-2">
-        {/* Avatar */}
-        <div className="flex-shrink-0">
-          <div className="relative h-10 w-10 rounded-full overflow-hidden border border-border">
-            {post.imageUrl && (
-              <div className="px-4 pb-4">
-                <div className="relative rounded-lg overflow-hidden border border-border aspect-[4/5] sm:aspect-[16/10] bg-muted">
-                  <Image
-                    src={post.imageUrl} // TypeScript tahu ini string di sini
-                    alt="Gambar dalam postingan"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, 800px"
-                    loading="lazy"
-                    quality={75}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+    <article className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+      {/* ========== POST HEADER ========== */}
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          {/* Left: Avatar + Author Info */}
+          <div className="flex items-center space-x-3">
+            {/* Avatar */}
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+              {post.author.name.charAt(0).toUpperCase()}
+            </div>
 
-        {/* Info author */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold text-base leading-none truncate">
-              {post.author.name}
-            </span>
-            <span className="text-sm text-muted-foreground truncate">
-              @{post.author.username}
-            </span>
+            {/* Author Name + Timestamp */}
+            <div className="min-w-0">
+              <h3 className="font-semibold text-gray-900 hover:underline cursor-pointer truncate">
+                {post.author.name}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {formatRelativeTime(post.createdAt)}
+              </p>
+            </div>
           </div>
-          <time
-            dateTime={post.createdAt}
-            className="text-sm text-muted-foreground"
+
+          {/* Right: More Options Button */}
+          <button
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            aria-label="More options"
           >
-            {formatDistanceToNow(new Date(post.createdAt), {
-              addSuffix: true,
-            })}
-          </time>
+            <MoreHorizontal className="h-5 w-5 text-gray-600" />
+          </button>
+        </div>
+
+        {/* ========== POST CONTENT ========== */}
+        <div className="mb-3">
+          <p className="text-gray-900 whitespace-pre-wrap break-words text-[15px] leading-relaxed">
+            {post.content}
+          </p>
         </div>
       </div>
 
-      {/* Konten utama */}
-      <div className="px-4 pb-3">
-        <p className="whitespace-pre-wrap leading-relaxed text-base">
-          {post.content}
-        </p>
-      </div>
-
-      {/* Gambar post (opsional) */}
-      {post.imageUrl && (
-        <div className="px-4 pb-4">
-          <div className="relative rounded-lg overflow-hidden border border-border aspect-[4/5] sm:aspect-[16/10] bg-muted">
-            <Image
-              src={post.imageUrl}
-              alt="Gambar dalam postingan"
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, 800px"
-              loading="lazy"
-              quality={75}
-            />
-          </div>
+      {/* ========== POST IMAGE ========== */}
+      {post.image && (
+        <div className="relative w-full bg-gray-100">
+          <Image
+            src={post.image}
+            alt="Post image"
+            width={600}
+            height={400}
+            className="w-full h-auto object-cover"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+          />
         </div>
       )}
 
-      {/* Actions bar (dummy) */}
-      <div className="flex items-center justify-around px-4 py-3 border-t border-border text-muted-foreground">
+      {/* ========== ENGAGEMENT STATS ========== */}
+      <div className="px-4 py-2 flex items-center justify-between text-sm text-gray-600 border-t border-gray-100">
+        {/* Likes Count */}
+        <div className="flex items-center space-x-1">
+          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500">
+            <ThumbsUp className="h-3 w-3 text-white fill-white" />
+          </div>
+          <span className="hover:underline cursor-pointer">
+            {formatNumber(post.likes)}
+          </span>
+        </div>
+
+        {/* Comments + Shares Count */}
+        <div className="flex items-center space-x-4">
+          <span className="hover:underline cursor-pointer">
+            {formatNumber(post.comments)}{" "}
+            {post.comments === 1 ? "comment" : "comments"}
+          </span>
+          <span className="hover:underline cursor-pointer">
+            {formatNumber(post.shares)} {post.shares === 1 ? "share" : "shares"}
+          </span>
+        </div>
+      </div>
+
+      {/* ========== ACTION BUTTONS ========== */}
+      <div className="px-2 py-1 border-t border-gray-200 flex items-center">
         <button
-          type="button"
-          className="flex items-center gap-2 hover:text-foreground transition-colors"
+          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 transition-colors flex-1 group"
           aria-label="Like post"
         >
-          <span className="text-lg">❤️</span>
-          <span>{post.likesCount}</span>
+          <ThumbsUp className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+          <span className="text-gray-700 font-medium group-hover:text-blue-600 transition-colors">
+            Like
+          </span>
         </button>
 
         <button
-          type="button"
-          className="flex items-center gap-2 hover:text-foreground transition-colors"
+          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 transition-colors flex-1 group"
           aria-label="Comment on post"
         >
-          <span className="text-lg">💬</span>
-          <span>{post.commentsCount}</span>
+          <MessageCircle className="h-5 w-5 text-gray-600 group-hover:text-green-600 transition-colors" />
+          <span className="text-gray-700 font-medium group-hover:text-green-600 transition-colors">
+            Comment
+          </span>
         </button>
 
         <button
-          type="button"
-          className="flex items-center gap-2 hover:text-foreground transition-colors"
+          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 transition-colors flex-1 group"
           aria-label="Share post"
         >
-          <span className="text-lg">🔗</span>
-          <span>Share</span>
+          <Share2 className="h-5 w-5 text-gray-600 group-hover:text-orange-600 transition-colors" />
+          <span className="text-gray-700 font-medium group-hover:text-orange-600 transition-colors">
+            Share
+          </span>
         </button>
       </div>
     </article>
