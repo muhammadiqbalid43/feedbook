@@ -26,7 +26,7 @@ const PostActions = ({ postId, isLiked }: PostActionsProps) => {
       >
         <span className="text-xl">👍</span>
         <span className="font-medium">
-          {isLoading ? "..." : isLiked ? "Liked" : "Like"}
+          {isLoading ? "" : isLiked ? "Liked" : "Like"}
         </span>
       </button>
 
