@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/query-provider";
 import Navbar from "@/components/layout/navbar";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +30,8 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-1">{children}</main>
           </div>
+
+          <Toaster position="top-right" richColors expand={false} closeButton />
         </QueryProvider>
       </body>
     </html>
