@@ -1,9 +1,13 @@
 import { dataStore } from "@/server/data/store";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST({ params }: { params: { id: string } }) {
+export async function POST(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const postId = params.id;
+    const params = await context.params; // await di sini
+    const { id } = params;
 
     // Simulate 10% failure rate untuk demo error handling
     if (Math.random() < 0.1) {
@@ -17,7 +21,7 @@ export async function POST({ params }: { params: { id: string } }) {
       setTimeout(resolve, Math.random() * 300 + 200)
     );
 
-    const post = dataStore.likePost(postId);
+    const post = dataStore.likePost(id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -33,9 +37,12 @@ export async function POST({ params }: { params: { id: string } }) {
   }
 }
 
-export async function DELETE({ params }: { params: { id: string } }) {
+export async function DELETE(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const postId = params.id;
+    const { id } = await context.params;
 
     // Simulate failure rate
     if (Math.random() < 0.1) {
@@ -49,7 +56,7 @@ export async function DELETE({ params }: { params: { id: string } }) {
       setTimeout(resolve, Math.random() * 300 + 200)
     );
 
-    const post = dataStore.unlikePost(postId);
+    const post = dataStore.unlikePost(id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
