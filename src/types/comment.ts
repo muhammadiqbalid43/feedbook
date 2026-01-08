@@ -1,3 +1,4 @@
+// types/comment.ts
 export interface Comment {
   id: string;
   postId: string;
@@ -8,6 +9,7 @@ export interface Comment {
   };
   content: string;
   likes: number;
+  isLiked?: boolean;
   createdAt: string;
 }
 
